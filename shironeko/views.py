@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from django.shortcuts import render
 from django.http.request import HttpRequest
 from django.http import JsonResponse, HttpResponse
+
+from hubserver import settings
 from shironeko.models import ShironekoGatcha
 import mpld3
 
@@ -22,7 +24,7 @@ def upload_data(request):
         info = [int(d) for d in info.groups()]
         info.insert(0, 2016)
         info[-1] *= 1000
-        time = datetime(*info)
+        time = datetime(*info, tzinfo=settings.TIME_ZONE)
         star = int(request.GET['star'])
 
         if not 0 < star < 5:
@@ -37,7 +39,7 @@ def upload_data(request):
 
 def browse(request):
     # select
-    now = datetime.now()
+    now = datetime.now(tz=settings.TIME_ZONE)
     start = now - timedelta(hours=1)
     data = ShironekoGatcha.objects.filter(time__gte=start)
     x = []
