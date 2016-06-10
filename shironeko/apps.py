@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class DataportConfig(AppConfig):
-    name = 'dataport'
+    name = 'shironeko'
