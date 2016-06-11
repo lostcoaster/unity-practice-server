@@ -1,5 +1,7 @@
 import re
 from datetime import datetime, timedelta
+from django.utils import timezone
+import pytz
 
 from django.shortcuts import render
 from django.http.request import HttpRequest
@@ -16,36 +18,57 @@ def upload_data(request):
     assert isinstance(request, HttpRequest)
 
     # upload gatcha results
-    if request.GET['type'] == 'shironeko_gatcha':
-        info = re.match(
-            r'http://image\.shironeko\.gatyaken\.com/drop/drop345/(\d{2})(\d{2})-(\d{2})(\d{2})-(\d{2})-(\d{3}).jpg',
-            request.GET['url']
-        )
-        info = [int(d) for d in info.groups()]
-        info.insert(0, 2016)
-        info[-1] *= 1000
-        time = datetime(*info, tzinfo=settings.TIME_ZONE)
-        star = int(request.GET['star'])
+    tz = pytz.timezone(settings.TIME_ZONE)
+    if request.GET:
+        counter = 0
+        for url, star in zip(request.GET['url'].split(';'), request.GET['star']):
+            info = re.match(
+                r'(\d{2})(\d{2})-(\d{2})(\d{2})-(\d{2})-(\d{3}).jpg',
+                url
+            )
+            info = [int(d) for d in info.groups()]
+            info.insert(0, 2016)
+            info[-1] *= 1000
+            time = datetime(*info)
+            tz.localize(time)
+            star = int(star)
 
-        if not 0 < star < 5:
-            return JsonResponse({'success': False, 'msg': 'Invalid star {}'.format(request.GET['star'])})
+            if not 0 < star < 5:
+                return JsonResponse({'success': False, 'msg': 'Invalid star {}'.format(request.GET['star'])})
 
-        if ShironekoGatcha.objects.filter(time=time).exists():
-            return JsonResponse({'success': True, 'added': 0})
-        else:
-            ShironekoGatcha.objects.create(time=time, star=star)
-            return JsonResponse({'success': True, 'added': 1})
+            if not ShironekoGatcha.objects.filter(time=time).exists():
+                ShironekoGatcha.objects.create(time=time, star=star)
+                counter += 1
+
+        return JsonResponse({'success': True, 'added': counter})
 
 
 def browse(request):
+    # setting
+    list_interval = timedelta(hours=1)
+    cluster_interval = timedelta(seconds=30)
     # select
-    now = datetime.now(tz=settings.TIME_ZONE)
-    start = now - timedelta(hours=1)
-    data = ShironekoGatcha.objects.filter(time__gte=start)
+    now = timezone.now()
+    start = now - list_interval
+    data = ShironekoGatcha.objects.filter(time__gte=start).order_by('time')
     x = []
     y = []
     if data.exists():
-        raise NotImplementedError
+        t = []
+        ss = 0
+        for d in data:
+            if t and d.time-t[-1] >= cluster_interval:
+                x.append(t[len(t)//2])
+                y.append(ss/len(t))
+                t = []
+                ss = 0
+            t.append(d.time)
+            ss += 1 if d.star >= 4 else 0
+        else:
+            # last record
+            if t:
+                x.append(t[len(t)//2])
+                y.append(ss/len(t))
     else:
         x.append(now)
         y.append(0)
