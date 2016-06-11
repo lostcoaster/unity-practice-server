@@ -49,6 +49,7 @@ def browse(request):
     cluster_interval = timedelta(seconds=30)
     # select
     now = timezone.now()
+    tz = timezone.get_current_timezone()
     start = now - list_interval
     data = ShironekoGatcha.objects.filter(time__gte=start).order_by('time')
     x = []
@@ -58,7 +59,7 @@ def browse(request):
         ss = 0
         for d in data:
             if t and d.time-t[-1] >= cluster_interval:
-                x.append(t[len(t)//2])
+                x.append(t[len(t)//2].astimezone(tz).replace(tzinfo=None))  # ugly workaround as matplotlib sucks
                 y.append(ss/len(t))
                 t = []
                 ss = 0
@@ -67,14 +68,14 @@ def browse(request):
         else:
             # last record
             if t:
-                x.append(t[len(t)//2])
+                x.append(t[len(t)//2].astimezone(tz).replace(tzinfo=None))
                 y.append(ss/len(t))
     else:
         x.append(now)
         y.append(0)
 
     import matplotlib.pyplot as pyp
-    pyp.plot(x, y)
+    pyp.plot_date(x, y, tz='UTC', fmt='-', xdate=True)
     fig_html = mpld3.fig_to_html(pyp.gcf())
 
     return render(request, 'view_result.html', context={'fig_html': fig_html})
