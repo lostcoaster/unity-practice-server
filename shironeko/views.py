@@ -30,7 +30,7 @@ def upload_data(request):
             info.insert(0, 2016)
             info[-1] *= 1000
             time = datetime(*info)
-            tz.localize(time)
+            time = tz.localize(time)
             star = int(star)
 
             if not 0 < star < 5:
