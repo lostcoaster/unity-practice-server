@@ -54,6 +54,7 @@ def browse(request):
     data = ShironekoGatcha.objects.filter(time__gte=start).order_by('time')
     x = []
     y = []
+    c = []
     if data.exists():
         t = []
         ss = 0
@@ -61,6 +62,7 @@ def browse(request):
             if t and d.time-t[-1] >= cluster_interval:
                 x.append(t[len(t)//2].astimezone(tz).replace(tzinfo=None))  # ugly workaround as matplotlib sucks
                 y.append(ss/len(t))
+                c.append(len(t))
                 t = []
                 ss = 0
             t.append(d.time)
@@ -70,12 +72,22 @@ def browse(request):
             if t:
                 x.append(t[len(t)//2].astimezone(tz).replace(tzinfo=None))
                 y.append(ss/len(t))
+                c.append(len(t))
     else:
-        x.append(now)
-        y.append(0)
+        x.extend([start, now])
+        y.extend([0, 0])
+        c.extend([0, 0])
+
+    # labels
+    labels = []
+    for i, vx in enumerate(x):
+        labels.append('{} {} ({})'.format(vx.strftime(':%M'), y[i], c[i]))
 
     import matplotlib.pyplot as pyp
-    pyp.plot_date(x, y, tz='UTC', fmt='-', xdate=True)
+    pyp.plot(x, y)
+    points = pyp.scatter(x, y, s=c)
+    tooltip = mpld3.plugins.PointLabelTooltip(points, labels)
+    mpld3.plugins.connect(pyp.gcf(), tooltip)
     fig_html = mpld3.fig_to_html(pyp.gcf())
 
     return render(request, 'view_result.html', context={'fig_html': fig_html})
