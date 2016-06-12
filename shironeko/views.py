@@ -82,14 +82,16 @@ def browse(request):
     labels = []
     for i, vx in enumerate(x):
         labels.append('{} {:.2f} ({})'.format(vx.strftime(':%M'), y[i], c[i]))
-    s = [20*vc for vc in c]
+    s = [20*vc*2 for vc in c]
     import matplotlib.pyplot as pyp
-    pyp.clf()
-    pyp.plot(x, y)
-    points = pyp.scatter(x, y, s=s)
+    pyp.switch_backend('Agg')
+    fig = pyp.figure(figsize=(12, 7.5))
+    fig.gca().plot(x, y)
+    points = fig.gca().scatter(x, y, s=s)
     tooltip = mpld3.plugins.PointLabelTooltip(points, labels)
-    mpld3.plugins.connect(pyp.gcf(), tooltip)
-    fig_html = mpld3.fig_to_html(pyp.gcf())
+    mpld3.plugins.connect(fig, tooltip)
+    fig_html = mpld3.fig_to_html(fig)
+    pyp.close(fig)
 
     return render(request, 'view_result.html', context={'fig_html': fig_html})
 
