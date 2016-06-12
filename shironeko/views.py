@@ -45,7 +45,10 @@ def upload_data(request):
 
 def browse(request):
     # setting
-    list_interval = timedelta(hours=1)
+    if 't' in request.GET:
+        list_interval = timedelta(minutes=int(request.GET['t']))
+    else:
+        list_interval = timedelta(hours=1)
     cluster_interval = timedelta(seconds=30)
     # select
     now = timezone.now()
