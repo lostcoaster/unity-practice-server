@@ -81,11 +81,12 @@ def browse(request):
     # labels
     labels = []
     for i, vx in enumerate(x):
-        labels.append('{} {} ({})'.format(vx.strftime(':%M'), y[i], c[i]))
-
+        labels.append('{} {:.2f} ({})'.format(vx.strftime(':%M'), y[i], c[i]))
+    s = [20*vc for vc in c]
     import matplotlib.pyplot as pyp
+    pyp.clf()
     pyp.plot(x, y)
-    points = pyp.scatter(x, y, s=c)
+    points = pyp.scatter(x, y, s=s)
     tooltip = mpld3.plugins.PointLabelTooltip(points, labels)
     mpld3.plugins.connect(pyp.gcf(), tooltip)
     fig_html = mpld3.fig_to_html(pyp.gcf())
