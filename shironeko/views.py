@@ -87,7 +87,7 @@ def browse(request):
     pyp.switch_backend('Agg')
     fig = pyp.figure(figsize=(12, 7.5))
     fig.gca().plot(x, y)
-    points = fig.gca().scatter(x, y, s=s)
+    points = fig.gca().scatter(x, y, s=s, c='cyan')
     tooltip = mpld3.plugins.PointLabelTooltip(points, labels)
     mpld3.plugins.connect(fig, tooltip)
     fig_html = mpld3.fig_to_html(fig)
