@@ -84,7 +84,7 @@ def browse(request):
     # labels
     labels = []
     for i, vx in enumerate(x):
-        labels.append('{} {:.2f} ({})'.format(vx.strftime(':%M'), y[i], c[i]))
+        labels.append('{}-{:.2%} ({})'.format(vx.strftime('%H:%M'), y[i], c[i]))
     s = [20*vc*2 for vc in c]
     import matplotlib.pyplot as pyp
     pyp.switch_backend('Agg')
