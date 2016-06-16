@@ -61,21 +61,16 @@ def browse(request):
     if data.exists():
         t = []
         ss = 0
-        for d in data:
-            if t and d.time-t[-1] >= cluster_interval:
+        for d in data + [None]:  # sentinel
+            if d is None or (t and d.time-t[-1] >= cluster_interval):
                 x.append(t[len(t)//2].astimezone(tz).replace(tzinfo=None))  # ugly workaround as matplotlib sucks
                 y.append(ss/len(t))
                 c.append(len(t))
                 t = []
                 ss = 0
-            t.append(d.time)
-            ss += 1 if d.star >= 4 else 0
-        else:
-            # last record
-            if t:
-                x.append(t[len(t)//2].astimezone(tz).replace(tzinfo=None))
-                y.append(ss/len(t))
-                c.append(len(t))
+            if d is not None:
+                t.append(d.time)
+                ss += 1 if d.star >= 4 else 0
     else:
         x.extend([start, now])
         y.extend([0, 0])
