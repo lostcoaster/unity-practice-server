@@ -3,6 +3,13 @@
  */
 
 $(function () {
-    var main = $('#maincontent');
-    main.append($('<'))
+    'use strict';
+
+    var main = $('#paint');
+    main.drawRect({
+        x:10,
+        y:20,
+        width: 300,
+        height: 400,
+    })
 });
