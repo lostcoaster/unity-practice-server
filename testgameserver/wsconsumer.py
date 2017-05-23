@@ -5,25 +5,23 @@
 from channels import Group
 from channels.sessions import channel_session
 
-# Connected to websocket.connect
-@channel_session
-def ws_connect(message):
-    # Accept connection
-    message.reply_channel.send({"accept": True})
-    # Work out room name from path (ignore slashes)
-    room = message.content['path'].strip("/")
-    # Save room in session and add us to the group
-    message.channel_session['room'] = room
-    Group("chat-%s" % room).add(message.reply_channel)
 
-# Connected to websocket.receive
 @channel_session
 def ws_message(message):
-    Group("chat-%s" % message.channel_session['room']).send({
-        "text": message['text'],
-    })
+    if 'role' not in message.channel_session:
+        import json
+        data = json.loads(message.content['text'])
+        if 'role' in data:
+            message.channel_session['role'] = data['role']
+            Group(data['role']).add(message.reply_channel)
+    elif message.channel_session['role'] == 'manager':
+        Group('player').send({'text': message['text']})
+    else:
+        Group('manager').send({'text': message['text']})
+
 
 # Connected to websocket.disconnect
 @channel_session
 def ws_disconnect(message):
-    Group("chat-%s" % message.channel_session['room']).discard(message.reply_channel)
+    if 'role' in message.channel_session:
+        Group(message.channel_session['role']).discard(message.reply_channel)
