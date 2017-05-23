@@ -14,3 +14,13 @@ from .settings import *
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     },
 # }
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "asgi_redis.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis-server-name", 6379)],
+        },
+        "ROUTING": "hubserver.routing.channel_routing",
+    },
+}
