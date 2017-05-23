@@ -48,7 +48,7 @@ $(function () {
             var data = message.split(';'); // keeping it as string is perfectly fine
             this.playerPos = {x: data[0], y: data[1]};
             // in order: red, blue, yellow, green
-            i = 2;
+            var i = 2;
             var gm_kind = ['red', 'blue', 'yellow', 'green'];
             for (var g = 0; g < 4; ++g) {
                 var temp = [];
@@ -103,20 +103,15 @@ $(function () {
 
     //split parameters
     var path = window.location.search.substring(1);
-    path = path.split('&');
-    var request_data = {};
-    for (var i = 0, n = path.length; i < n; ++i) {
-        var pair = path[i].split('=');
-        request_data[pair[0]] = pair[1];
-    }
 
     // connect
     var manager = new Scenario();
     var socket = new WebSocket('ws://' + window.location.host);
     socket.onopen = function () {
-        this.send(JSON.stringify(request_data));
+        this.send(path);
     };
     socket.onmessage = function (message) {
+        console.log(message.data);
         manager.processData(message.data);
     };
     if (socket.readyState === WebSocket.OPEN) {
