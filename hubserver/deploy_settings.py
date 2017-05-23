@@ -17,10 +17,10 @@ from .settings import *
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "asgi_redis.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("redis-server-name", 6379)],
-        },
+        "BACKEND": "asgi_ipc.IPCChannelLayer",
         "ROUTING": "hubserver.routing.channel_routing",
+        "CONFIG": {
+            "prefix": "hubserver",
+        },
     },
 }
