@@ -46,9 +46,18 @@ $(function () {
 
         this.processData = function (message) {
             var data = message.split(';'); // keeping it as string is perfectly fine
+            for (var i = 0; i < data.length;){
+                if (!data[i]){
+                    i += 1;
+                } else {
+                    data[i] = (Number(data[i]) * 300 / 8) + 300;
+                    data[i + 1] = (-Number(data[i + 1]) * 300 / 8) + 300;
+                    i += 2;
+                }
+            }
             this.playerPos = {x: data[0], y: data[1]};
             // in order: red, blue, yellow, green
-            var i = 2;
+            i = 2;
             var gm_kind = ['red', 'blue', 'yellow', 'green'];
             for (var g = 0; g < 4; ++g) {
                 var temp = [];
@@ -111,7 +120,7 @@ $(function () {
         this.send(path);
     };
     socket.onmessage = function (message) {
-        console.log(message.data);
+        // console.log(message.data);
         manager.processData(message.data);
     };
     if (socket.readyState === WebSocket.OPEN) {

@@ -8,14 +8,16 @@ from channels.sessions import channel_session
 
 @channel_session
 def ws_message(message):
-    if 'role' not in message.channel_session:
-        if message['text'].startswith('role'):
-            message.channel_session['role'] = message['text'][4:]
+    if message.content['text'].startswith('role'):
+        if 'role' not in message.channel_session:
+            message.channel_session['role'] = message.content['text'][4:]
             Group(message.channel_session['role']).add(message.reply_channel)
-    elif message.channel_session['role'] == 'manager':
-        Group('player').send({'text': message['text']})
-    else:
-        Group('manager').send({'text': message['text']})
+    elif message.content['text'].startswith('d'):
+        # just to ignore pings
+        if message.channel_session['role'] == 'manager':
+            Group('player').send({'text': message['text'][1:]})
+        else:
+            Group('manager').send({'text': message['text'][1:]})
 
 
 # Connected to websocket.disconnect
